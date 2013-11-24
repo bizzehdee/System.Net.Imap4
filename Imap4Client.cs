@@ -25,6 +25,7 @@
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Net.Sockets;
 using System.Net.Security;
@@ -77,6 +78,15 @@ namespace System.Net.Imap4
 		/// Number of unread emails
 		/// </summary>
 		public UInt32 UnreadEmails { get; private set; }
+        /// <summary>
+        /// List of capabilities recieved from the server
+        /// </summary>
+        public IEnumerable<String> ServerCapabilities { get; private set; }
+
+        public enum AuthTypes
+        {
+            Plain
+        }
 
 		/// <summary>
 		/// Imap4 client implementation
@@ -130,6 +140,8 @@ namespace System.Net.Imap4
 			{
 				throw new Imap4Exception(response);
 			}
+
+            ServerCapabilities = GetServerCapabilities();
 		}
 
 		/// <summary>
@@ -168,19 +180,70 @@ namespace System.Net.Imap4
 			_client.Close();
 		}
 
-		/// <summary>
-		/// Send username and password authorisation
-		/// supports only AUTH=PLAIN for the moment
-		/// </summary>
-		/// <param name="user">email account username</param>
-		/// <param name="pass">email account password</param>
-		public void SendAuthUserPass(String user, String pass)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<String> GetServerCapabilities()
+        {
+            Write(". CAPABILITY");
+            string response;
+            do
+            {
+                response = Response();
+
+                if (response.StartsWith("* CAPABILITY"))
+                {
+                    String capabilities = response.Substring(12).Trim();
+                    foreach (string s in capabilities.Split(' '))
+                    {
+                        yield return s;
+                    }
+                }
+
+            } while (!response.StartsWith("."));
+
+            if (response.Substring(0, 4) != ". OK")
+            {
+                throw new Imap4Exception(response);
+            }
+        }
+
+	    /// <summary>
+	    /// Send username and password authorisation
+	    /// supports only AUTH=PLAIN for now
+	    /// </summary>
+	    /// <param name="user">email account username</param>
+	    /// <param name="pass">email account password</param>
+	    /// <param name="authType">Authorisation type to use</param>
+	    public void SendAuthUserPass(String user, String pass, AuthTypes authType = AuthTypes.Plain)
 		{
-			Write(". login " + user + " " + pass);
+            string response = "";
 
-			string response = Response();
+	        if (authType == AuthTypes.Plain)
+	        {
+	            Write(". AUTHENTICATE PLAIN");
+	            response = Response();
 
-			if (response.Substring(0, 4) != ". OK")
+                if (!response.StartsWith("+"))
+                {
+                    throw new Imap4Exception(response);
+                }
+
+	            byte[] authBytes = {0};
+                authBytes = authBytes.Concat(Encoding.ASCII.GetBytes(user)).Concat(new byte[] { 0 }).Concat(Encoding.ASCII.GetBytes(pass)).ToArray();
+
+                Write(Convert.ToBase64String(authBytes));
+
+                response = Response();
+	        }
+
+	        while (!response.StartsWith("."))
+	        {
+                response = Response();
+	        }
+
+	        if (response.Substring(0, 4) != ". OK")
 			{
 				throw new Imap4Exception(response);
 			}

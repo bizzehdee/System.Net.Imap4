@@ -28,14 +28,14 @@
 namespace System.Net.Imap4
 {
 	/// <summary>
-	/// 
+    /// IMAP4 protocol specific exception
 	/// </summary>
 	public class Imap4Exception : Exception
 	{
 		/// <summary>
-		/// 
+        /// IMAP4 protocol specific exception
 		/// </summary>
-		/// <param name="msg"></param>
+		/// <param name="msg">Protocol message</param>
 		public Imap4Exception(String msg)
 			: base(msg)
 		{

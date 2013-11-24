@@ -30,74 +30,74 @@ using System.Text;
 namespace System.Net.Imap4
 {
 	/// <summary>
-	/// 
+	/// Digested Imap4 mail message
 	/// </summary>
 	public class Imap4Message
 	{
 		/// <summary>
 		/// 
 		/// </summary>
-		public List<Imap4Attachment> Attachments { get; set; }
+		public List<Imap4Attachment> Attachments { get; private set; }
 		/// <summary>
 		/// 
 		/// </summary>
-		public Imap4HeaderList Headers { get; set; }
+        public Imap4HeaderList Headers { get; private set; }
 		/// <summary>
 		/// 
 		/// </summary>
-		public String Body { get; set; }
+        public String Body { get; private set; }
 		/// <summary>
 		/// 
 		/// </summary>
-		public String BodyText { get; set; }
+		public String BodyText { get; private set; }
 		/// <summary>
 		/// 
 		/// </summary>
-		public String BodyHtml { get; set; }
+        public String BodyHtml { get; private set; }
 		/// <summary>
 		/// 
 		/// </summary>
-		public String Subject { get; set; }
+        public String Subject { get; private set; }
 		/// <summary>
 		/// 
 		/// </summary>
-		public String From { get; set; }
+		public String From { get; private set; }
 		/// <summary>
 		/// 
 		/// </summary>
-		public String To { get; set; }
+		public String To { get; private set; }
 		/// <summary>
 		/// 
 		/// </summary>
-		public String ReplyTo { get; set; }
+		public String ReplyTo { get; private set; }
 		/// <summary>
 		/// 
 		/// </summary>
-		public double MimeVersion { get; set; }
+		public double MimeVersion { get; private set; }
 		/// <summary>
 		/// 
 		/// </summary>
-		public String ContentType { get; set; }
+		public String ContentType { get; private set; }
 		/// <summary>
 		/// 
 		/// </summary>
-		public String ContentBoundary { get; set; }
+		public String ContentBoundary { get; private set; }
 		/// <summary>
 		/// 
 		/// </summary>
-		public DateTime Date { get; set; }
+		public DateTime Date { get; private set; }
 		/// <summary>
 		/// 
 		/// </summary>
-		public bool IsReply { get; set; }
+		public bool IsReply { get; private set; }
 		/// <summary>
 		/// 
 		/// </summary>
-		public bool IsReceipt { get; set; }
+		public bool IsReceipt { get; private set; }
 		/// <summary>
 		/// 
 		/// </summary>
-		public String Raw { get; set; }
+		public String Raw { get; private set; }
 
 		/// <summary>
 		/// 

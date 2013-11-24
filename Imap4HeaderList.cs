@@ -29,7 +29,7 @@ using System.Collections.Generic;
 namespace System.Net.Imap4
 {
 	/// <summary>
-	/// 
+	/// List of headers
 	/// </summary>
 	public class Imap4HeaderList : List<Imap4Header>
 	{
