@@ -282,7 +282,7 @@ namespace System.Net.Imap4
 		{
 			String response;
 
-			Write(". select " + folder);
+			Write(string.Format(". select \"{0}\"", folder));
 			CurrentFolder = folder;
 
 			do
