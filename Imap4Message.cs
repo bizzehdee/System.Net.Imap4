@@ -351,6 +351,12 @@ namespace System.Net.Imap4
 							}
 						}
 						break;
+					case "htmlbody":
+						BodyHtml = h.Value;
+						break;
+					case "plaintext":
+						BodyText = h.Value;
+						break;
 				}
 			}
 
