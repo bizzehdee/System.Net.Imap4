@@ -3,7 +3,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageTargetFallback>$(PackageTargetFallback);portable-win+net45+wp8+win81+wpa8</PackageTargetFallback>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Version>1.0.2</Version>
+    <Version>1.0.4</Version>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>Darren Horrocks</Authors>
     <PackageProjectUrl>https://github.com/bizzehdee/System.Net.Imap4</PackageProjectUrl>

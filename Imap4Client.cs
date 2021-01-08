@@ -292,17 +292,26 @@ namespace System.Net.Imap4
 				if (response.Contains("EXISTS"))
 				{
 					String[] parts = response.Split(' ');
-					AvailableEmails = Convert.ToUInt32(parts[1]);
+					if (uint.TryParse(parts[1], out uint result))
+					{
+						AvailableEmails = result;
+					}
 				}
 				else if (response.Contains("RECENT"))
 				{
 					String[] parts = response.Split(' ');
-					RecentEmails = Convert.ToUInt32(parts[1]);
+					if (uint.TryParse(parts[1], out uint result))
+					{
+						RecentEmails = result;
+					}
 				}
 				else if (response.Contains("UNSEEN"))
 				{
 					String unseen = response.Substring(response.IndexOf("UNSEEN", StringComparison.Ordinal) + 7, 3);
-					RecentEmails = Convert.ToUInt32(unseen);
+					if (uint.TryParse(unseen, out uint result))
+					{
+						RecentEmails = result;
+					}
 				}
 			} while (response.StartsWith("*"));
 

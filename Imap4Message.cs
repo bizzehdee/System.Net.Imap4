@@ -45,7 +45,20 @@ namespace System.Net.Imap4
 		/// <summary>
 		/// 
 		/// </summary>
-        public String Body { get; private set; }
+        public String Body
+		{
+			get
+			{
+				if (string.IsNullOrWhiteSpace(BodyHtml) == false)
+				{
+					return BodyHtml;
+				}
+				else
+				{
+					return BodyText;
+				}
+			}
+		}
 		/// <summary>
 		/// 
 		/// </summary>
@@ -119,7 +132,6 @@ namespace System.Net.Imap4
 		{
 			Attachments = new List<Imap4Attachment>();
 			Headers = new Imap4HeaderList();
-			Body = "";
 			BodyText = "";
 			BodyHtml = "";
 			Subject = "";
