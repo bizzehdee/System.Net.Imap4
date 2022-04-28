@@ -45,16 +45,7 @@ namespace System.Net.Imap4
 		/// <summary>
 		/// 
 		/// </summary>
-		public String Body
-		{
-			get
-			{
-				if (string.IsNullOrWhiteSpace(BodyHtml))
-					return BodyText;
-				else
-					return BodyHtml;
-			}
-		}
+		public String Body => string.IsNullOrWhiteSpace(BodyHtml) ? BodyText : BodyHtml;
 
 		/// <summary>
 		/// 
