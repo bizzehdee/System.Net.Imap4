@@ -208,17 +208,15 @@ namespace System.Net.Imap4
 				{
 					if (lines[i] == "--" + bound) break;
 					if (lines[i] == "--" + bound + "--") break;
+
 					if (isAttachment)
-					{
 						messageBuilder.Append(lines[i]);
-					}
 					else
-					{
 						messageBuilder.AppendLine(lines[i]);
-					}
 				}
 
 				i--;
+
 				if (isAttachment)
 				{
 					Imap4Attachment currentAttachment = new Imap4Attachment
@@ -231,17 +229,18 @@ namespace System.Net.Imap4
 					//add to attachment list
 					Attachments.Add(currentAttachment);
 				}
-				else switch (currentType)
+				else 
+					switch (currentType)
 					{
 						case "text/plain":
 							BodyText = messageBuilder.ToString().Trim();
 							break;
 						case "text/html":
 							BodyHtml = messageBuilder.ToString().Trim();
+
 							if (transportEncoding == "base64")
-							{
 								BodyHtml = Encoding.ASCII.GetString(Convert.FromBase64String(BodyHtml));
-							}
+
 							break;
 					}
 			}
