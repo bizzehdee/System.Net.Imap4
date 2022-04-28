@@ -37,86 +37,86 @@ namespace System.Net.Imap4
 		/// <summary>
 		/// 
 		/// </summary>
-		public List<Imap4Attachment> Attachments { get; private set; }
+		public List<Imap4Attachment> Attachments { get; private set; } = new List<Imap4Attachment>();
 		/// <summary>
 		/// 
 		/// </summary>
-        public Imap4HeaderList Headers { get; private set; }
+		public Imap4HeaderList Headers { get; private set; } = new Imap4HeaderList();
 		/// <summary>
 		/// 
 		/// </summary>
-        public String Body
+		public String Body
 		{
 			get
 			{
-				if (string.IsNullOrWhiteSpace(BodyHtml) == false)
-				{
-					return BodyHtml;
-				}
-				else
-				{
+				if (string.IsNullOrWhiteSpace(BodyHtml))
 					return BodyText;
-				}
+				else
+					return BodyHtml;
 			}
 		}
+
 		/// <summary>
 		/// 
 		/// </summary>
-		public String BodyText { get; private set; }
+		public String BodyText { get; private set; } = "";
 		/// <summary>
 		/// 
 		/// </summary>
-        public String BodyHtml { get; private set; }
+		public String BodyHtml { get; private set; } = "";
 		/// <summary>
 		/// 
 		/// </summary>
-        public String Subject { get; private set; }
+		public String Subject { get; private set; } = "";
 		/// <summary>
 		/// 
 		/// </summary>
-        public String SubjectDecoded
-		{
-			get
-			{
-				return QuotedPrintables.DecodeQuotedPrintables(Subject);
-			}
-		}
+		public String SubjectDecoded => QuotedPrintables.DecodeQuotedPrintables(Subject);
+
 		/// <summary>
 		/// 
 		/// </summary>
-		public String From { get; private set; }
+		public String From { get; private set; } = "";
 		/// <summary>
 		/// 
 		/// </summary>
-		public String To { get; private set; }
+		public String To { get; private set; } = "";
 		/// <summary>
 		/// 
 		/// </summary>
-		public String ReplyTo { get; private set; }
+		public String Cc { get; private set; } = "";
 		/// <summary>
 		/// 
 		/// </summary>
-		public double MimeVersion { get; private set; }
+		public String Bcc { get; private set; } = "";
 		/// <summary>
 		/// 
 		/// </summary>
-		public String ContentType { get; private set; }
+		public String ReplyTo { get; private set; } = "";
 		/// <summary>
 		/// 
 		/// </summary>
-		public String ContentBoundary { get; private set; }
+		public double MimeVersion { get; private set; } = 0;
 		/// <summary>
 		/// 
 		/// </summary>
-		public DateTime Date { get; private set; }
+		public String ContentType { get; private set; } = "text/plain";
 		/// <summary>
 		/// 
 		/// </summary>
-		public bool IsReply { get; private set; }
+		public String ContentBoundary { get; private set; } = "";
 		/// <summary>
 		/// 
 		/// </summary>
-		public bool IsReceipt { get; private set; }
+		public DateTime Date { get; private set; } = DateTime.Now;
+		/// <summary>
+		/// 
+		/// </summary>
+		public bool IsReply { get; private set; } = false;
+		/// <summary>
+		/// 
+		/// </summary>
+		public bool IsReceipt { get; private set; } = false;
 		/// <summary>
 		/// 
 		/// </summary>
@@ -135,25 +135,9 @@ namespace System.Net.Imap4
 		/// </summary>
 		static public MimeTypeHandlerCB MimeTypeHandler;
 
-		/// <summary>
-		/// 
-		/// </summary>
+
 		public Imap4Message()
 		{
-			Attachments = new List<Imap4Attachment>();
-			Headers = new Imap4HeaderList();
-			BodyText = "";
-			BodyHtml = "";
-			Subject = "";
-			From = "";
-			To = "";
-			ReplyTo = "";
-			MimeVersion = 0;
-			ContentType = "text/plain";
-			ContentBoundary = "";
-			Date = DateTime.Now;
-			IsReply = false;
-			IsReceipt = false;
 		}
 
 		private void ParseMessageSection(String bound, String[] lines, ref int i)
@@ -247,28 +231,28 @@ namespace System.Net.Imap4
 				if (isAttachment)
 				{
 					Imap4Attachment currentAttachment = new Imap4Attachment
-						{
-							Name = filename,
-							Type = currentType,
-							Data = Convert.FromBase64String(messageBuilder.ToString())
-						};
+					{
+						Name = filename,
+						Type = currentType,
+						Data = Convert.FromBase64String(messageBuilder.ToString())
+					};
 
 					//add to attachment list
 					Attachments.Add(currentAttachment);
 				}
 				else switch (currentType)
-				{
-					case "text/plain":
-						BodyText = messageBuilder.ToString().Trim();
-						break;
-					case "text/html":
-						BodyHtml = messageBuilder.ToString().Trim();
-						if (transportEncoding == "base64")
-						{
-							BodyHtml = Encoding.ASCII.GetString(Convert.FromBase64String(BodyHtml));
-						}
-						break;
-				}
+					{
+						case "text/plain":
+							BodyText = messageBuilder.ToString().Trim();
+							break;
+						case "text/html":
+							BodyHtml = messageBuilder.ToString().Trim();
+							if (transportEncoding == "base64")
+							{
+								BodyHtml = Encoding.ASCII.GetString(Convert.FromBase64String(BodyHtml));
+							}
+							break;
+					}
 			}
 		}
 
@@ -322,6 +306,12 @@ namespace System.Net.Imap4
 						break;
 					case "to":
 						To = h.Value;
+						break;
+					case "cc":
+						Cc = h.Value;
+						break;
+					case "bcc":
+						Bcc = h.Value;
 						break;
 					case "from":
 						From = h.Value;
