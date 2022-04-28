@@ -74,6 +74,16 @@ namespace System.Net.Imap4
 		/// <summary>
 		/// 
 		/// </summary>
+        public String SubjectDecoded
+		{
+			get
+			{
+				return QuotedPrintables.DecodeQuotedPrintables(Subject);
+			}
+		}
+		/// <summary>
+		/// 
+		/// </summary>
 		public String From { get; private set; }
 		/// <summary>
 		/// 
@@ -326,7 +336,14 @@ namespace System.Net.Imap4
 						{
 							try
 							{
-								Date = DateTime.Parse(h.Value);
+								// sometimes a string like this is received:
+								// Thu, 28 May 2020 17:55:01 +0200 (CEST)
+								// we need to remove the (CEST) part
+								String dtx = h.Value;
+								if (dtx.EndsWith(")"))
+									dtx = dtx.Substring(0, dtx.LastIndexOf(" "));
+
+								Date = DateTime.Parse(dtx);
 							}
 							catch (Exception)
 							{
