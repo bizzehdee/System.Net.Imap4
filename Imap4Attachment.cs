@@ -27,26 +27,26 @@
 
 namespace System.Net.Imap4
 {
-	/// <summary>
-	/// Container class for an attachment
-	/// </summary>
-	public class Imap4Attachment
-	{
-		/// <summary>
-		/// Filename
-		/// </summary>
-		public String Name { get; set; }
-		/// <summary>
-		/// File type
-		/// </summary>
-		public String Type { get; set; }
-		/// <summary>
-		/// Encoding
-		/// </summary>
-		public String Encoding { get; set; }
-		/// <summary>
-		/// Attachment data
-		/// </summary>
-		public byte[] Data { get; set; }
-	}
+    /// <summary>
+    /// Container class for an attachment
+    /// </summary>
+    public class Imap4Attachment
+    {
+        /// <summary>
+        /// Filename
+        /// </summary>
+        public string Name { get; set; }
+        /// <summary>
+        /// File type
+        /// </summary>
+        public string Type { get; set; }
+        /// <summary>
+        /// Encoding
+        /// </summary>
+        public string Encoding { get; set; }
+        /// <summary>
+        /// Attachment data
+        /// </summary>
+        public byte[] Data { get; set; }
+    }
 }

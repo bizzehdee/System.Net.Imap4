@@ -28,39 +28,39 @@ using System.Collections.Generic;
 
 namespace System.Net.Imap4
 {
-	/// <summary>
-	/// List of headers
-	/// </summary>
-	public class Imap4HeaderList : List<Imap4Header>
-	{
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="index"></param>
-		public String this[String index]
-		{
-			get
-			{
-				foreach (Imap4Header h in this)
-				{
-					if (h.Name == index) return h.Value;
-				}
+    /// <summary>
+    /// List of headers
+    /// </summary>
+    public class Imap4HeaderList : List<Imap4Header>
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index"></param>
+        public string this[string index]
+        {
+            get
+            {
+                foreach (Imap4Header h in this)
+                {
+                    if (h.Name == index) return h.Value;
+                }
 
-				return null;
-			}
+                return null;
+            }
 
-			set
-			{
-				foreach (Imap4Header h in this)
-				{
-					if (h.Name != index) continue;
+            set
+            {
+                foreach (Imap4Header h in this)
+                {
+                    if (h.Name != index) continue;
 
-					h.Value = value;
-					return;
-				}
+                    h.Value = value;
+                    return;
+                }
 
-				Add(new Imap4Header(index, value));
-			}
-		}
-	}
+                Add(new Imap4Header(index, value));
+            }
+        }
+    }
 }

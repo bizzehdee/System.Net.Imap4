@@ -33,158 +33,159 @@ using System.IO;
 
 namespace System.Net.Imap4
 {
-	/// <summary>
-	/// Working implementation of the IMAP4 client protocol
-	/// </summary>
-	public class Imap4Client
-	{
-		/// <summary>
-		/// Delegate for interupt to a Wait() call
-		/// </summary>
-        /// <param name="sender">Imap4Client instance which triggered this call</param>
-		/// <param name="res">Response recieved</param>
-		public delegate void WaitInteruptedD(object sender, String res);
-
-		/// <summary>
-		/// Event called when a call to Wait() is interupted
-		/// </summary>
-		public event WaitInteruptedD WaitInterupted;
-
-		/// <summary>
-        /// Delegate for interupt to a Wait() call with a new mail
-		/// </summary>
+    /// <summary>
+    /// Working implementation of the IMAP4 client protocol
+    /// </summary>
+    public class Imap4Client
+    {
+        /// <summary>
+        /// Delegate for interupt to a Wait() call
+        /// </summary>
         /// <param name="sender">Imap4Client instance which triggered this call</param>
         /// <param name="res">Response recieved</param>
-		public delegate void NewMailReceivedD(object sender, String res);
+        public delegate void WaitInteruptedD(object sender, string res);
 
-		/// <summary>
+        /// <summary>
+        /// Event called when a call to Wait() is interupted
+        /// </summary>
+        public event WaitInteruptedD WaitInterupted;
+
+        /// <summary>
+        /// Delegate for interupt to a Wait() call with a new mail
+        /// </summary>
+        /// <param name="sender">Imap4Client instance which triggered this call</param>
+        /// <param name="res">Response recieved</param>
+        public delegate void NewMailReceivedD(object sender, string res);
+
+        /// <summary>
         /// Event called when a call to Wait() is interupted with a new mail
-		/// </summary>
-		public event NewMailReceivedD NewMailReceived;
+        /// </summary>
+        public event NewMailReceivedD NewMailReceived;
 
-		/// <summary>
-		/// The current folder the client is using
-		/// </summary>
-		public String CurrentFolder { get; private set; }
-		/// <summary>
-		/// Total number of availble emails
-		/// </summary>
-		public UInt32 AvailableEmails { get; private set; }
-		/// <summary>
-		/// Number of recent emails
-		/// </summary>
-		public UInt32 RecentEmails { get; private set; }
-		/// <summary>
-		/// Number of unread emails
-		/// </summary>
-		public UInt32 UnreadEmails { get; private set; }
+        /// <summary>
+        /// The current folder the client is using
+        /// </summary>
+        public string CurrentFolder { get; private set; }
+        /// <summary>
+        /// Total number of availble emails
+        /// </summary>
+        public uint AvailableEmails { get; private set; }
+        /// <summary>
+        /// Number of recent emails
+        /// </summary>
+        public uint RecentEmails { get; private set; }
+        /// <summary>
+        /// Number of unread emails
+        /// </summary>
+        public uint UnreadEmails { get; private set; }
         /// <summary>
         /// List of capabilities recieved from the server
         /// </summary>
-        public IEnumerable<String> ServerCapabilities { get; private set; }
+        public IEnumerable<string> ServerCapabilities { get; private set; }
 
         public enum AuthTypes
         {
-            Plain
+            Plain,
+            XOAuth2
         }
 
-		/// <summary>
-		/// Imap4 client implementation
-		/// </summary>
-		public Imap4Client()
-		{
-			CurrentFolder = "";
-			_client = new TcpClient();
-			AvailableEmails = 0;
-			RecentEmails = 0;
-			UnreadEmails = 0;
-		}
+        /// <summary>
+        /// Imap4 client implementation
+        /// </summary>
+        public Imap4Client()
+        {
+            CurrentFolder = "";
+            _client = new TcpClient();
+            AvailableEmails = 0;
+            RecentEmails = 0;
+            UnreadEmails = 0;
+        }
 
-		/// <summary>
-		/// Connect to imap4 server
-		/// </summary>
-		/// <param name="server">name or ip of server to connect to</param>
-		/// <param name="port">port number to use</param>
-		/// <param name="ssl">should we use ssl to connect</param>
-		public void Connect(String server, int port, bool ssl)
-		{
-			_useSSL = ssl;
-			_client.Connect(server, port);
+        /// <summary>
+        /// Connect to imap4 server
+        /// </summary>
+        /// <param name="server">name or ip of server to connect to</param>
+        /// <param name="port">port number to use</param>
+        /// <param name="ssl">should we use ssl to connect</param>
+        public void Connect(string server, int port, bool ssl)
+        {
+            _useSSL = ssl;
+            _client.Connect(server, port);
 
-			_networkStream = _client.GetStream();
+            _networkStream = _client.GetStream();
 
-			if (_useSSL)
-			{
-				_sslStream = new SslStream(_networkStream, true);
+            if (_useSSL)
+            {
+                _sslStream = new SslStream(_networkStream, true);
 
-				try
-				{
-					_sslStream.AuthenticateAsClient(server);
-				}
-				catch (Exception)
-				{
+                try
+                {
+                    _sslStream.AuthenticateAsClient(server);
+                }
+                catch (Exception)
+                {
 
-					return;
-				}
+                    return;
+                }
 
-				_stream = _sslStream;
-			}
-			else
-			{
-				_stream = _networkStream;
-			}
+                _stream = _sslStream;
+            }
+            else
+            {
+                _stream = _networkStream;
+            }
 
-			string response = Response();
+            var response = Response();
 
-			if (response.Substring(0, 4) != "* OK")
-			{
-				throw new Imap4Exception(response);
-			}
+            if (response.Substring(0, 4) != "* OK")
+            {
+                throw new Imap4Exception(response);
+            }
 
             ServerCapabilities = GetServerCapabilities();
-		}
+        }
 
-		/// <summary>
-		/// Connect to imap4 server (SSL turned off)
-		/// </summary>
-		/// <param name="server">name or ip of server to connect to</param>
-		/// <param name="port">should we use ssl to connect</param>
-		public void Connect(String server, int port)
-		{
-			Connect(server, port, false);
-		}
+        /// <summary>
+        /// Connect to imap4 server (SSL turned off)
+        /// </summary>
+        /// <param name="server">name or ip of server to connect to</param>
+        /// <param name="port">should we use ssl to connect</param>
+        public void Connect(string server, int port)
+        {
+            Connect(server, port, false);
+        }
 
-		/// <summary>
-		/// Connect to imap4 server (SSL turned off, using port 143)
-		/// </summary>
-		/// <param name="server">name or ip of server to connect to</param>
-		public void Connect(String server)
-		{
-			Connect(server, 143);
-		}
+        /// <summary>
+        /// Connect to imap4 server (SSL turned off, using port 143)
+        /// </summary>
+        /// <param name="server">name or ip of server to connect to</param>
+        public void Connect(string server)
+        {
+            Connect(server, 143);
+        }
 
-		/// <summary>
-		/// Send logoff command and disconnect from server
-		/// </summary>
-		public void Disconnect()
-		{
-			Write(". logout");
+        /// <summary>
+        /// Send logoff command and disconnect from server
+        /// </summary>
+        public void Disconnect()
+        {
+            Write(". logout");
 
-			string response = Response();
+            string response = Response();
 
-			if (response.Substring(0, 5) != "* BYE")
-			{
-				throw new Imap4Exception(response);
-			}
+            if (response.Substring(0, 5) != "* BYE")
+            {
+                throw new Imap4Exception(response);
+            }
 
-			_client.Close();
-		}
+            _client.Close();
+        }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<String> GetServerCapabilities()
+        public IEnumerable<string> GetServerCapabilities()
         {
             Write(". CAPABILITY");
             string response;
@@ -194,7 +195,7 @@ namespace System.Net.Imap4
 
                 if (response.StartsWith("* CAPABILITY"))
                 {
-                    String capabilities = response.Substring(12).Trim();
+                    string capabilities = response.Substring(12).Trim();
                     foreach (string s in capabilities.Split(' '))
                     {
                         yield return s;
@@ -209,381 +210,396 @@ namespace System.Net.Imap4
             }
         }
 
-	    /// <summary>
-	    /// Send username and password authorisation
-	    /// supports only AUTH=PLAIN for now
-	    /// </summary>
-	    /// <param name="user">email account username</param>
-	    /// <param name="pass">email account password</param>
-	    /// <param name="authType">Authorisation type to use</param>
-	    public void SendAuthUserPass(String user, String pass, AuthTypes authType = AuthTypes.Plain)
-		{
-            string response = "";
+        /// <summary>
+        /// Send username and password authorisation
+        /// supports only AUTH=PLAIN and AUTH=XOAUTH2 for now
+        /// </summary>
+        /// <param name="user">email account username</param>
+        /// <param name="pass">email account password or oauth2 token</param>
+        /// <param name="authType">Authorisation type to use</param>
+        public void SendAuthUserPass(string user, string pass, AuthTypes authType = AuthTypes.Plain)
+        {
+            byte[] authBytes = { 0 };
+            string response;
 
-	        if (authType == AuthTypes.Plain)
-	        {
-	            Write(". AUTHENTICATE PLAIN");
-	            response = Response();
+            if (authType == AuthTypes.Plain)
+            {
+                Write(". AUTHENTICATE PLAIN");
+                response = Response();
 
                 if (!response.StartsWith("+"))
                 {
                     throw new Imap4Exception(response);
                 }
 
-	            byte[] authBytes = {0};
                 authBytes = authBytes.Concat(Encoding.ASCII.GetBytes(user)).Concat(new byte[] { 0 }).Concat(Encoding.ASCII.GetBytes(pass)).ToArray();
 
                 Write(Convert.ToBase64String(authBytes));
 
+            }
+            else if (authType == AuthTypes.XOAuth2)
+            {
+                Write(". AUTHENTICATE XOAUTH2");
                 response = Response();
-	        }
 
-	        while (!response.StartsWith("."))
-	        {
+                if (!response.StartsWith("+"))
+                {
+                    throw new Imap4Exception(response);
+                }
+
+                authBytes = Encoding.ASCII.GetBytes("user=");
+                authBytes = authBytes
+                    .Concat(Encoding.ASCII.GetBytes(user))
+                    .Concat(new byte[] { 1 })
+                    .Concat(Encoding.ASCII.GetBytes(string.Format("auth=Bearer {0}", pass)))
+                    .Concat(new byte[] { 1, 1 }).ToArray();
+            }
+            else
+            {
+                throw new Imap4Exception("Authentication type not supported");
+            }
+
+            Write(Convert.ToBase64String(authBytes));
+
+            response = Response();
+
+            while (!response.StartsWith("."))
+            {
                 response = Response();
-	        }
+            }
 
-	        if (response.Substring(0, 4) != ". OK")
-			{
-				throw new Imap4Exception(response);
-			}
-		}
+            if (response.Substring(0, 4) != ". OK")
+            {
+                throw new Imap4Exception(response);
+            }
+        }
 
-		/// <summary>
-		/// List all folders based in the filter
-		/// </summary>
-		/// <param name="filter">Filter to apply to required list</param>
-		/// <returns>List of all folders matching the filter</returns>
-		public IEnumerable<String> ListFolders(String filter = "*")
-		{
-			String response;
-			char[] trimChars = new[] { ' ', '\t', '\r', '\n', '\"' };
+        /// <summary>
+        /// List all folders based in the filter
+        /// </summary>
+        /// <param name="filter">Filter to apply to required list</param>
+        /// <returns>List of all folders matching the filter</returns>
+        public IEnumerable<string> ListFolders(string filter = "*")
+        {
+            string response;
+            char[] trimChars = new[] { ' ', '\t', '\r', '\n', '\"' };
 
-			Write(". list \"\" \"" + filter + "\"");
+            Write(". list \"\" \"" + filter + "\"");
 
-			do
-			{
-				response = Response();
+            do
+            {
+                response = Response();
 
-				if (!response.StartsWith("*")) continue;
+                if (!response.StartsWith("*")) continue;
 
-				String[] parts = response.Split(' ');
-				String folder = parts[parts.Length - 1].Trim(trimChars);
+                string[] parts = response.Split(' ');
+                string folder = parts[parts.Length - 1].Trim(trimChars);
 
-				yield return folder;
-			} while (response.StartsWith("*"));
-		}
+                yield return folder;
+            } while (response.StartsWith("*"));
+        }
 
-		/// <summary>
-		/// Select the folder to use
-		/// </summary>
-		/// <param name="folder">Name of the folder to use. e.g. INBOX</param>
-		public void SelectFolder(String folder)
-		{
-			String response;
+        /// <summary>
+        /// Select the folder to use
+        /// </summary>
+        /// <param name="folder">Name of the folder to use. e.g. INBOX</param>
+        public void SelectFolder(string folder)
+        {
+            string response;
 
-			Write(string.Format(". select \"{0}\"", folder));
-			CurrentFolder = folder;
+            Write(string.Format(". select \"{0}\"", folder));
+            CurrentFolder = folder;
 
-			do
-			{
-				response = Response();
+            do
+            {
+                response = Response();
 
-				if (response.Contains("EXISTS"))
-				{
-					String[] parts = response.Split(' ');
-					if (uint.TryParse(parts[1], out uint result))
-					{
-						AvailableEmails = result;
-					}
-				}
-				else if (response.Contains("RECENT"))
-				{
-					String[] parts = response.Split(' ');
-					if (uint.TryParse(parts[1], out uint result))
-					{
-						RecentEmails = result;
-					}
-				}
-				else if (response.Contains("UNSEEN"))
-				{
-					String unseen = response.Substring(response.IndexOf("UNSEEN", StringComparison.Ordinal) + 7, 3);
-					if (uint.TryParse(unseen, out uint result))
-					{
-						RecentEmails = result;
-					}
-				}
-			} while (response.StartsWith("*"));
+                if (response.Contains("EXISTS"))
+                {
+                    string[] parts = response.Split(' ');
+                    AvailableEmails = Convert.ToUInt32(parts[1]);
+                }
+                else if (response.Contains("RECENT"))
+                {
+                    string[] parts = response.Split(' ');
+                    RecentEmails = Convert.ToUInt32(parts[1]);
+                }
+                else if (response.Contains("UNSEEN"))
+                {
+                    string unseen = response.Substring(response.IndexOf("UNSEEN", StringComparison.Ordinal) + 7, 3);
+                    RecentEmails = Convert.ToUInt32(unseen);
+                }
+            } while (response.StartsWith("*"));
 
-			if (response.Substring(0, 4) == ". OK") return;
+            if (response.Substring(0, 4) == ". OK") return;
 
-			CurrentFolder = "";
-			AvailableEmails = 0;
-			RecentEmails = 0;
-			RecentEmails = 0;
+            CurrentFolder = "";
+            AvailableEmails = 0;
+            RecentEmails = 0;
+            RecentEmails = 0;
 
-			throw new Imap4Exception(response.Substring(5));
-		}
+            throw new Imap4Exception(response.Substring(5));
+        }
 
-		/// <summary>
-		/// Get the total number of emails in this folder, same as AvailableEmails
-		/// </summary>
-		/// <returns>AvailableEmails</returns>
-		public UInt32 GetEmailCount()
-		{
-			return AvailableEmails;
-		}
+        /// <summary>
+        /// Get the total number of emails in this folder, same as AvailableEmails
+        /// </summary>
+        /// <returns>AvailableEmails</returns>
+        public uint GetEmailCount()
+        {
+            return AvailableEmails;
+        }
 
-		/// <summary>
-		/// Returns raw mail data for <param name="id">specified id</param>
-		/// </summary>
-		/// <param name="id">Mail ID</param>
-		/// <returns>Raw mail data</returns>
-		public String GetEmailRaw(UInt32 id)
-		{
-			StringBuilder raw = new StringBuilder("");
+        /// <summary>
+        /// Returns raw mail data for <param name="id">specified id</param>
+        /// </summary>
+        /// <param name="id">Mail ID</param>
+        /// <returns>Raw mail data</returns>
+        public string GetEmailRaw(uint id)
+        {
+            StringBuilder raw = new("");
 
-			Write(". fetch " + id + " body[]");
+            Write(". fetch " + id + " body[]");
 
-			string response = Response();
+            string response = Response();
 
-			if (response.Contains(id + " FETCH"))
-			{
-				do
-				{
-					response = Response();
+            if (response.Contains(id + " FETCH"))
+            {
+                do
+                {
+                    response = Response();
 
-					if (!response.StartsWith(".") && !response.StartsWith(")") && !response.StartsWith("*"))
-					{
-						raw.Append(response);
-					}
+                    if (!response.StartsWith(".") && !response.StartsWith(")") && !response.StartsWith("*"))
+                    {
+                        raw.Append(response);
+                    }
 
-				} while (!response.StartsWith(". OK"));
-			}
+                } while (!response.StartsWith(". OK"));
+            }
 
-			if (response.Contains(" NO"))
-			{
-				throw new Imap4Exception(response);
-			}
+            if (response.Contains(" NO"))
+            {
+                throw new Imap4Exception(response);
+            }
 
-			return raw.ToString();
-		}
+            return raw.ToString();
+        }
 
-		/// <summary>
+        /// <summary>
         /// Returns parsed mail data as Imap4Message for <paramref name="id">specified id</paramref>
-		/// </summary>
+        /// </summary>
         /// <param name="id">Mail ID</param>
         /// <returns>Imap4Message parsed mail</returns>
-		public Imap4Message GetEmail(UInt32 id)
-		{
-			String messageRaw = GetEmailRaw(id);
+        public Imap4Message GetEmail(uint id)
+        {
+            var messageRaw = GetEmailRaw(id);
 
-			Imap4Message message = new Imap4Message();
+            Imap4Message message = new();
 
-			message.ParseRawMessage(messageRaw);
+            message.ParseRawMessage(messageRaw);
 
-			return message;
-		}
+            return message;
+        }
 
-		/// <summary>
-		/// Sets the deleted flag and moves to \\Deleted folder
-		/// </summary>
+        /// <summary>
+        /// Sets the deleted flag and moves to \\Deleted folder
+        /// </summary>
         /// <param name="id">Mail ID</param>
-		public void DeleteEmail(UInt32 id)
-		{
-			String response;
+        public void DeleteEmail(uint id)
+        {
+            string response;
 
-			Write(". UID STORE " + id + " +FLAGS (\\Deleted)");
+            Write(". UID STORE " + id + " +FLAGS (\\Deleted)");
 
-			do
-			{
-				response = Response();
+            do
+            {
+                response = Response();
 
-			} while (!response.StartsWith("."));
+            } while (!response.StartsWith("."));
 
-			if (!response.StartsWith(". OK"))
-			{
-				throw new Imap4Exception(response.Substring(5));
-			}
+            if (!response.StartsWith(". OK"))
+            {
+                throw new Imap4Exception(response.Substring(5));
+            }
 
-			Write(". EXPUNGE");
+            Write(". EXPUNGE");
 
-			do
-			{
-				response = Response();
+            do
+            {
+                response = Response();
 
-			} while (!response.StartsWith("."));
+            } while (!response.StartsWith("."));
 
-			if (!response.StartsWith(". OK"))
-			{
-				throw new Imap4Exception(response.Substring(5));
-			}
-		}
+            if (!response.StartsWith(". OK"))
+            {
+                throw new Imap4Exception(response.Substring(5));
+            }
+        }
 
-		/// <summary>
-		/// Causes the client to wait for the server to do something/anything
-		/// </summary>
-		/// <returns>Reason for cancelling wait</returns>
-		public String Wait()
-		{
-			String response;
+        /// <summary>
+        /// Causes the client to wait for the server to do something/anything
+        /// </summary>
+        /// <returns>Reason for cancelling wait</returns>
+        public string Wait()
+        {
+            string response;
 
-			Write(". idle");
-			_waiting = true;
+            Write(". idle");
+            _waiting = true;
 
-			do
-			{
-				response = Response();
+            do
+            {
+                response = Response();
 
-				if (response.StartsWith("+")) continue;
+                if (response.StartsWith("+")) continue;
 
-				_waiting = false;
+                _waiting = false;
 
-				if (response.Contains("RECENT"))
-				{
-					if (NewMailReceived != null) NewMailReceived(this, response);
-				}
-				else
-				{
-					if (WaitInterupted != null) WaitInterupted(this, response);
-				}
+                if (response.Contains("RECENT"))
+                {
+                    NewMailReceived?.Invoke(this, response);
+                }
+                else
+                {
+                    WaitInterupted?.Invoke(this, response);
+                }
 
-			} while (!response.StartsWith("."));
+            } while (!response.StartsWith("."));
 
-			return response;
-		}
+            return response;
+        }
 
-		/// <summary>
-		/// Cancels a previous call to Wait()
-		/// </summary>
-		/// <returns></returns>
-		public String CancelWait()
-		{
-			if (_waiting) Write("done");
-			_waiting = false;
+        /// <summary>
+        /// Cancels a previous call to Wait()
+        /// </summary>
+        /// <returns></returns>
+        public string CancelWait()
+        {
+            if (_waiting) Write("done");
+            _waiting = false;
 
-			string response = Response();
+            var response = Response();
 
-			return response;
-		}
+            return response;
+        }
 
-		/// <summary>
-		/// Set a flag on an email
-		/// </summary>
-		/// <param name="id">ID of the email to set</param>
-		/// <param name="flag">Flag to set, must begin with backslash</param>
-		/// <returns>true on set, false on not set</returns>
-		public bool SetFlag(UInt32 id, String flag)
-		{
-			String response;
+        /// <summary>
+        /// Set a flag on an email
+        /// </summary>
+        /// <param name="id">ID of the email to set</param>
+        /// <param name="flag">Flag to set, must begin with backslash</param>
+        /// <returns>true on set, false on not set</returns>
+        public bool SetFlag(uint id, string flag)
+        {
+            string response;
 
-			if (!flag.StartsWith("\\"))
-			{
-				throw new Imap4Exception("Invalid Flag");
-			}
+            if (!flag.StartsWith("\\"))
+            {
+                throw new Imap4Exception("Invalid Flag");
+            }
 
-			Write(". store " + id + " +flags " + flag);
+            Write(". store " + id + " +flags " + flag);
 
-			do
-			{
-				response = Response();
+            do
+            {
+                response = Response();
 
-			} while (!response.StartsWith("."));
+            } while (!response.StartsWith("."));
 
-			return response.Contains("OK STORE");
-		}
+            return response.Contains("OK STORE");
+        }
 
-		/// <summary>
+        /// <summary>
         /// Unset a flag on an email
-		/// </summary>
+        /// </summary>
         /// <param name="id">ID of the email to unset</param>
         /// <param name="flag">Flag to unset, must begin with backslash</param>
         /// <returns>true on unset, false on not unset</returns>
-		public bool RemoveFlag(UInt32 id, String flag)
-		{
-			String response;
+        public bool RemoveFlag(uint id, string flag)
+        {
+            string response;
 
-			if (!flag.StartsWith("\\"))
-			{
-				throw new Imap4Exception("Invalid Flag");
-			}
+            if (!flag.StartsWith("\\"))
+            {
+                throw new Imap4Exception("Invalid Flag");
+            }
 
-			Write(". store " + id + " -flags " + flag);
+            Write(". store " + id + " -flags " + flag);
 
-			do
-			{
-				response = Response();
+            do
+            {
+                response = Response();
 
-			} while (!response.StartsWith("."));
+            } while (!response.StartsWith("."));
 
-			return response.Contains("OK STORE");
-		}
+            return response.Contains("OK STORE");
+        }
 
-		/// <summary>
-		/// Shortcut for SetFlag, with Seen already set
-		/// </summary>
-		/// <param name="id">ID of email to mark as read</param>
-		/// <returns>true on set, false on not set</returns>
-		public bool MarkAsRead(UInt32 id)
-		{
-			return SetFlag(id, "\\Seen");
-		}
+        /// <summary>
+        /// Shortcut for SetFlag, with Seen already set
+        /// </summary>
+        /// <param name="id">ID of email to mark as read</param>
+        /// <returns>true on set, false on not set</returns>
+        public bool MarkAsRead(uint id)
+        {
+            return SetFlag(id, "\\Seen");
+        }
 
-		#region Privates
+        #region Privates
 
-		private bool _waiting;
-		private readonly TcpClient _client;
-		private bool _useSSL;
-		private SslStream _sslStream;
-		private NetworkStream _networkStream;
-		private Stream _stream;
+        private bool _waiting;
+        private readonly TcpClient _client;
+        private bool _useSSL;
+        private SslStream _sslStream;
+        private NetworkStream _networkStream;
+        private Stream _stream;
 
-		private void Write(String str)
-		{
-			ASCIIEncoding encoder = new ASCIIEncoding();
+        private void Write(string str)
+        {
+            ASCIIEncoding encoder = new();
 
-			if (!str.EndsWith("\r\n")) str += "\r\n";
+            if (!str.EndsWith("\r\n")) str += "\r\n";
 
-			byte[] buffer = encoder.GetBytes(str);
+            byte[] buffer = encoder.GetBytes(str);
 
 #if DEBUG
-			Diagnostics.Debug.WriteLine(">> " + str);
+            Diagnostics.Debug.WriteLine(">> " + str);
 #endif
 
-			_stream.Write(buffer, 0, buffer.Length);
-		}
+            _stream.Write(buffer, 0, buffer.Length);
+        }
 
-		private string Response()
-		{
-			ASCIIEncoding encoder = new ASCIIEncoding();
-			StringBuilder returnBuilder = new StringBuilder();
+        private string Response()
+        {
+            ASCIIEncoding encoder = new();
+            StringBuilder returnBuilder = new();
 
-			byte[] readBuffer = new byte[1];
+            byte[] readBuffer = new byte[1];
 
-			while (true)
-			{
-				readBuffer[0] = 0;
-				int bytesRead = _stream.Read(readBuffer, 0, 1);
+            while (true)
+            {
+                readBuffer[0] = 0;
+                int bytesRead = _stream.Read(readBuffer, 0, 1);
 
-				if (bytesRead != 1)
-				{
-					break;
-				}
+                if (bytesRead != 1)
+                {
+                    break;
+                }
 
-				returnBuilder.Append(encoder.GetString(readBuffer, 0, 1));
+                returnBuilder.Append(encoder.GetString(readBuffer, 0, 1));
 
-				if (readBuffer[0] == '\n')
-				{
-					break;
-				}
-			}
+                if (readBuffer[0] == '\n')
+                {
+                    break;
+                }
+            }
 #if DEBUG
-			Diagnostics.Debug.WriteLine("<< " + returnBuilder);
+            Diagnostics.Debug.WriteLine("<< " + returnBuilder);
 #endif
 
-			return returnBuilder.ToString();
-		}
+            return returnBuilder.ToString();
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }

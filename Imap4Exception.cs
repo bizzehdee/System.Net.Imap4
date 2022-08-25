@@ -36,7 +36,7 @@ namespace System.Net.Imap4
         /// IMAP4 protocol specific exception
 		/// </summary>
 		/// <param name="msg">Protocol message</param>
-		public Imap4Exception(String msg)
+		public Imap4Exception(string msg)
 			: base(msg)
 		{
 

@@ -27,29 +27,29 @@
 
 namespace System.Net.Imap4
 {
-	/// <summary>
-	/// IMAP4 message header
-	/// </summary>
-	public class Imap4Header
-	{
-		/// <summary>
-		/// Header name
-		/// </summary>
-		public String Name { get; set; }
-		/// <summary>
-		/// Header value
-		/// </summary>
-		public String Value { get; set; }
+    /// <summary>
+    /// IMAP4 message header
+    /// </summary>
+    public class Imap4Header
+    {
+        /// <summary>
+        /// Header name
+        /// </summary>
+        public string Name { get; set; }
+        /// <summary>
+        /// Header value
+        /// </summary>
+        public string Value { get; set; }
 
-		/// <summary>
-		/// Create a Name/Value combo
-		/// </summary>
-		/// <param name="n">Header name</param>
-		/// <param name="v">Header value</param>
-		public Imap4Header(String n, String v)
-		{
-			Name = n;
-			Value = v;
-		}
-	}
+        /// <summary>
+        /// Create a Name/Value combo
+        /// </summary>
+        /// <param name="n">Header name</param>
+        /// <param name="v">Header value</param>
+        public Imap4Header(string n, string v)
+        {
+            Name = n;
+            Value = v;
+        }
+    }
 }

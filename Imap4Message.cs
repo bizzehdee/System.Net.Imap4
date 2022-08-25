@@ -29,23 +29,23 @@ using System.Text;
 
 namespace System.Net.Imap4
 {
-	/// <summary>
-	/// Digested Imap4 mail message
-	/// </summary>
-	public class Imap4Message
-	{
-		/// <summary>
-		/// 
-		/// </summary>
-		public List<Imap4Attachment> Attachments { get; private set; }
-		/// <summary>
-		/// 
-		/// </summary>
+    /// <summary>
+    /// Digested Imap4 mail message
+    /// </summary>
+    public class Imap4Message
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        public List<Imap4Attachment> Attachments { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public Imap4HeaderList Headers { get; private set; }
-		/// <summary>
-		/// 
-		/// </summary>
-        public String Body
+        /// <summary>
+        /// 
+        /// </summary>
+        public string Body 
 		{
 			get
 			{
@@ -59,359 +59,359 @@ namespace System.Net.Imap4
 				}
 			}
 		}
-		/// <summary>
-		/// 
-		/// </summary>
-		public String BodyText { get; private set; }
-		/// <summary>
-		/// 
-		/// </summary>
-        public String BodyHtml { get; private set; }
-		/// <summary>
-		/// 
-		/// </summary>
-        public String Subject { get; private set; }
-		/// <summary>
-		/// 
-		/// </summary>
-		public String From { get; private set; }
-		/// <summary>
-		/// 
-		/// </summary>
-		public String To { get; private set; }
-		/// <summary>
-		/// 
-		/// </summary>
-		public String ReplyTo { get; private set; }
-		/// <summary>
-		/// 
-		/// </summary>
-		public double MimeVersion { get; private set; }
-		/// <summary>
-		/// 
-		/// </summary>
-		public String ContentType { get; private set; }
-		/// <summary>
-		/// 
-		/// </summary>
-		public String ContentBoundary { get; private set; }
-		/// <summary>
-		/// 
-		/// </summary>
-		public DateTime Date { get; private set; }
-		/// <summary>
-		/// 
-		/// </summary>
-		public bool IsReply { get; private set; }
-		/// <summary>
-		/// 
-		/// </summary>
-		public bool IsReceipt { get; private set; }
-		/// <summary>
-		/// 
-		/// </summary>
-		public String Raw { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string BodyText { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string BodyHtml { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string Subject { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string From { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string To { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string ReplyTo { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public double MimeVersion { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string ContentType { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string ContentBoundary { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public DateTime Date { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool IsReply { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool IsReceipt { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string Raw { get; private set; }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="mimetype"></param>
-		/// <param name="lines"></param>
-		/// <param name="start"></param>
-		/// <param name="msg"></param>
-		public delegate bool MimeTypeHandlerCB(String mimetype, String[] lines, ref int start, Imap4Message msg);
-		/// <summary>
-		/// 
-		/// </summary>
-		static public MimeTypeHandlerCB MimeTypeHandler;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="mimetype"></param>
+        /// <param name="lines"></param>
+        /// <param name="start"></param>
+        /// <param name="msg"></param>
+        public delegate bool MimeTypeHandlerCB(string mimetype, string[] lines, ref int start, Imap4Message msg);
+        /// <summary>
+        /// 
+        /// </summary>
+        static public MimeTypeHandlerCB MimeTypeHandler;
 
-		/// <summary>
-		/// 
-		/// </summary>
-		public Imap4Message()
-		{
-			Attachments = new List<Imap4Attachment>();
-			Headers = new Imap4HeaderList();
-			BodyText = "";
-			BodyHtml = "";
-			Subject = "";
-			From = "";
-			To = "";
-			ReplyTo = "";
-			MimeVersion = 0;
-			ContentType = "text/plain";
-			ContentBoundary = "";
-			Date = DateTime.Now;
-			IsReply = false;
-			IsReceipt = false;
-		}
+        /// <summary>
+        /// 
+        /// </summary>
+        public Imap4Message()
+        {
+            Attachments = new List<Imap4Attachment>();
+            Headers = new Imap4HeaderList();
+            BodyText = "";
+            BodyHtml = "";
+            Subject = "";
+            From = "";
+            To = "";
+            ReplyTo = "";
+            MimeVersion = 0;
+            ContentType = "text/plain";
+            ContentBoundary = "";
+            Date = DateTime.Now;
+            IsReply = false;
+            IsReceipt = false;
+        }
 
-		private void ParseMessageSection(String bound, String[] lines, ref int i)
-		{
-			for (; i < lines.Length; i++)
-			{
-				if (lines[i] == "--" + bound + "--") return; //its all over for this section
+        private void ParseMessageSection(string bound, string[] lines, ref int i)
+        {
+            for (; i < lines.Length; i++)
+            {
+                if (lines[i] == "--" + bound + "--") return; //its all over for this section
 
-				if (lines[i] != "--" + bound) continue;
+                if (lines[i] != "--" + bound) continue;
 
-				//beginning of the section, start looking for headers
-				String currentType = "text/plain";
-				String newBound = "";
-				String filename = "";
-				String transportEncoding = "plain";
-				bool isAttachment = false;
+                //beginning of the section, start looking for headers
+                var currentType = "text/plain";
+                var newBound = "";
+                var filename = "";
+                var transportEncoding = "plain";
+                var isAttachment = false;
 
-				while (lines[i] != "")
-				{
-					if (lines[i].StartsWith("Content-Type"))
-					{
-						String[] parts = lines[i].Split(':');
-						String[] bits = parts[1].Split(';');
-						currentType = bits[0].Trim();
+                while (lines[i] != "")
+                {
+                    if (lines[i].StartsWith("Content-Type"))
+                    {
+                        string[] parts = lines[i].Split(':');
+                        string[] bits = parts[1].Split(';');
+                        currentType = bits[0].Trim();
 
-						for (int x = 0; x < bits.Length; x++)
-						{
-							bits[x] = bits[x].Trim();
-							if (bits[x].StartsWith("boundary=\""))
-							{
-								newBound = bits[x].Substring(10, bits[x].Length - 11);
-							}
-							else if (bits[x].StartsWith("boundary"))
-							{
-								newBound = bits[x].Substring(9, bits[x].Length - 9);
-							}
-						}
-					}
-					else if (lines[i].StartsWith("Content-Disposition"))
-					{
-						String[] parts = lines[i].Split(':');
-						String[] bits = parts[1].Split(';');
-						isAttachment = bits[0].Trim() == "attachment";
+                        for (int x = 0; x < bits.Length; x++)
+                        {
+                            bits[x] = bits[x].Trim();
+                            if (bits[x].StartsWith("boundary=\""))
+                            {
+                                newBound = bits[x].Substring(10, bits[x].Length - 11);
+                            }
+                            else if (bits[x].StartsWith("boundary"))
+                            {
+                                newBound = bits[x].Substring(9, bits[x].Length - 9);
+                            }
+                        }
+                    }
+                    else if (lines[i].StartsWith("Content-Disposition"))
+                    {
+                        string[] parts = lines[i].Split(':');
+                        string[] bits = parts[1].Split(';');
+                        isAttachment = bits[0].Trim() == "attachment";
 
-						for (int x = 0; x < bits.Length; x++)
-						{
-							bits[x] = bits[x].Trim();
-							if (bits[x].StartsWith("filename=\""))
-							{
-								filename = bits[x].Substring(10, bits[x].Length - 11);
-							}
-							else if (bits[x].StartsWith("filename="))
-							{
-								filename = bits[x].Substring(9, bits[x].Length - 9);
-							}
-						}
-					}
-					else if (lines[i].StartsWith("Content-Transfer-Encoding"))
-					{
-						transportEncoding = lines[i].Substring(27);
-					}
+                        for (int x = 0; x < bits.Length; x++)
+                        {
+                            bits[x] = bits[x].Trim();
+                            if (bits[x].StartsWith("filename=\""))
+                            {
+                                filename = bits[x].Substring(10, bits[x].Length - 11);
+                            }
+                            else if (bits[x].StartsWith("filename="))
+                            {
+                                filename = bits[x].Substring(9, bits[x].Length - 9);
+                            }
+                        }
+                    }
+                    else if (lines[i].StartsWith("Content-Transfer-Encoding"))
+                    {
+                        transportEncoding = lines[i].Substring(27);
+                    }
 
-					i++;
-				}
+                    i++;
+                }
 
-				if (newBound != "")
-				{
-					//check for new section
-					ParseMessageSection(newBound, lines, ref i);
-				}
+                if (newBound != "")
+                {
+                    //check for new section
+                    ParseMessageSection(newBound, lines, ref i);
+                }
 
-				if (MimeTypeHandler != null && MimeTypeHandler(currentType, lines, ref i, this)) continue;
+                if (MimeTypeHandler != null && MimeTypeHandler(currentType, lines, ref i, this)) continue;
 
-				StringBuilder messageBuilder = new StringBuilder();
+                StringBuilder messageBuilder = new();
 
-				for (; i < lines.Length; i++)
-				{
-					if (lines[i] == "--" + bound) break;
-					if (lines[i] == "--" + bound + "--") break;
-					if (isAttachment)
-					{
-						messageBuilder.Append(lines[i]);
-					}
-					else
-					{
-						messageBuilder.AppendLine(lines[i]);
-					}
-				}
+                for (; i < lines.Length; i++)
+                {
+                    if (lines[i] == "--" + bound) break;
+                    if (lines[i] == "--" + bound + "--") break;
+                    if (isAttachment)
+                    {
+                        messageBuilder.Append(lines[i]);
+                    }
+                    else
+                    {
+                        messageBuilder.AppendLine(lines[i]);
+                    }
+                }
 
-				i--;
-				if (isAttachment)
-				{
-					Imap4Attachment currentAttachment = new Imap4Attachment
-						{
-							Name = filename,
-							Type = currentType,
-							Data = Convert.FromBase64String(messageBuilder.ToString())
-						};
+                i--;
+                if (isAttachment)
+                {
+                    Imap4Attachment currentAttachment = new()
+                    {
+                        Name = filename,
+                        Type = currentType,
+                        Data = Convert.FromBase64String(messageBuilder.ToString())
+                    };
 
-					//add to attachment list
-					Attachments.Add(currentAttachment);
-				}
-				else switch (currentType)
-				{
-					case "text/plain":
-						BodyText = messageBuilder.ToString().Trim();
-						break;
-					case "text/html":
-						BodyHtml = messageBuilder.ToString().Trim();
-						if (transportEncoding == "base64")
-						{
-							BodyHtml = Encoding.ASCII.GetString(Convert.FromBase64String(BodyHtml));
-						}
-						break;
-				}
-			}
-		}
+                    //add to attachment list
+                    Attachments.Add(currentAttachment);
+                }
+                else switch (currentType)
+                    {
+                        case "text/plain":
+                            BodyText = messageBuilder.ToString().Trim();
+                            break;
+                        case "text/html":
+                            BodyHtml = messageBuilder.ToString().Trim();
+                            if (transportEncoding == "base64")
+                            {
+                                BodyHtml = Encoding.ASCII.GetString(Convert.FromBase64String(BodyHtml));
+                            }
+                            break;
+                    }
+            }
+        }
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="raw"></param>
-		/// <returns></returns>
-		public Imap4Message ParseRawMessage(String raw)
-		{
-			char[] separators = { '\n' };
-			char[] headerSeparators = { ':' };
-			char[] contentSeparators = { ';' };
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="raw"></param>
+        /// <returns></returns>
+        public Imap4Message ParseRawMessage(string raw)
+        {
+            char[] separators = { '\n' };
+            char[] headerSeparators = { ':' };
+            char[] contentSeparators = { ';' };
 
-			Raw = raw;
+            Raw = raw;
 
-			String[] lines = raw.Split(separators);
+            string[] lines = raw.Split(separators);
 
-			for (int x = 0; x < lines.Length; x++)
-			{
-				lines[x] = lines[x].TrimEnd('\r');
-			}
+            for (int x = 0; x < lines.Length; x++)
+            {
+                lines[x] = lines[x].TrimEnd('\r');
+            }
 
-			int i;
-			for (i = 0; i < lines.Length; i++)
-			{
-				if (lines[i].Trim().Length == 0) break;
+            int i;
+            for (i = 0; i < lines.Length; i++)
+            {
+                if (lines[i].Trim().Length == 0) break;
 
-				String currentHeader = lines[i].Trim();
+                string currentHeader = lines[i].Trim();
 
-				while (lines[i + 1].StartsWith("\t") || lines[i + 1].StartsWith(" "))
-				{
-					currentHeader = currentHeader.Trim() + " " + lines[++i].Trim();
-				}
+                while (lines[i + 1].StartsWith("\t") || lines[i + 1].StartsWith(" "))
+                {
+                    currentHeader = currentHeader.Trim() + " " + lines[++i].Trim();
+                }
 
 
-				String[] parts = currentHeader.Split(headerSeparators, 2);
+                string[] parts = currentHeader.Split(headerSeparators, 2);
 
-				Diagnostics.Debug.WriteLine(currentHeader);
+                Diagnostics.Debug.WriteLine(currentHeader);
 
-				Headers.Add(new Imap4Header(parts[0], parts[1].Trim()));
-			}
+                Headers.Add(new Imap4Header(parts[0], parts[1].Trim()));
+            }
 
-			//find some special headers to make them easier to use
-			foreach (Imap4Header h in Headers)
-			{
-				switch (h.Name.ToLower())
-				{
-					case "subject":
-						Subject = h.Value;
-						break;
-					case "to":
-						To = h.Value;
-						break;
-					case "from":
-						From = h.Value;
-						break;
-					case "reply-to":
-						ReplyTo = h.Value;
-						break;
-					case "mime-version":
-						MimeVersion = Convert.ToDouble(h.Value);
-						break;
-					case "date":
-						{
-							try
-							{
-								Date = DateTime.Parse(h.Value);
-							}
-							catch (Exception)
-							{
-								Date = DateTime.Now;
-							}
-						}
-						break;
-					case "content-type":
-						{
-							String type = h.Value;
-							if (type.Contains(";"))
-							{
-								//ContentBoundary
-								String[] contentParts = type.Split(contentSeparators);
+            //find some special headers to make them easier to use
+            foreach (Imap4Header h in Headers)
+            {
+                switch (h.Name.ToLower())
+                {
+                    case "subject":
+                        Subject = h.Value;
+                        break;
+                    case "to":
+                        To = h.Value;
+                        break;
+                    case "from":
+                        From = h.Value;
+                        break;
+                    case "reply-to":
+                        ReplyTo = h.Value;
+                        break;
+                    case "mime-version":
+                        MimeVersion = Convert.ToDouble(h.Value);
+                        break;
+                    case "date":
+                        {
+                            try
+                            {
+                                Date = DateTime.Parse(h.Value);
+                            }
+                            catch (Exception)
+                            {
+                                Date = DateTime.Now;
+                            }
+                        }
+                        break;
+                    case "content-type":
+                        {
+                            string type = h.Value;
+                            if (type.Contains(";"))
+                            {
+                                //ContentBoundary
+                                string[] contentParts = type.Split(contentSeparators);
 
-								ContentType = contentParts[0];
+                                ContentType = contentParts[0];
 
-								for (int x = 1; x < contentParts.Length; x++)
-								{
-									contentParts[x] = contentParts[x].Trim();
-									if (contentParts[x].StartsWith("boundary=\""))
-									{
-										ContentBoundary = contentParts[x].Substring(10, contentParts[x].Length - 11);
-									}
-									else if (contentParts[x].StartsWith("boundary"))
-									{
-										ContentBoundary = contentParts[x].Substring(9, contentParts[x].Length - 9);
-									}
-								}
-							}
-							else
-							{
-								ContentType = h.Value;
-							}
-						}
-						break;
-					case "htmlbody":
-						BodyHtml = h.Value;
-						break;
-					case "plaintext":
-						BodyText = h.Value;
-						break;
-				}
-			}
+                                for (int x = 1; x < contentParts.Length; x++)
+                                {
+                                    contentParts[x] = contentParts[x].Trim();
+                                    if (contentParts[x].StartsWith("boundary=\""))
+                                    {
+                                        ContentBoundary = contentParts[x].Substring(10, contentParts[x].Length - 11);
+                                    }
+                                    else if (contentParts[x].StartsWith("boundary"))
+                                    {
+                                        ContentBoundary = contentParts[x].Substring(9, contentParts[x].Length - 9);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                ContentType = h.Value;
+                            }
+                        }
+                        break;
+                    case "htmlbody":
+                        BodyHtml = h.Value;
+                        break;
+                    case "plaintext":
+                        BodyText = h.Value;
+                        break;
+                }
+            }
 
-			if (Headers["References"] != null || Headers["In-Reply-To"] != null)
-			{
-				IsReply = true;
-			}
+            if (Headers["References"] != null || Headers["In-Reply-To"] != null)
+            {
+                IsReply = true;
+            }
 
-			//do we have an outside parser?
-			//if so, ask them do they want to handle this message type
-			if (MimeTypeHandler == null || !MimeTypeHandler(ContentType, lines, ref i, this))
-			{
-				switch (ContentType)
-				{
-					case "text/plain":
-						{
-							//plain text message
-							StringBuilder bodyText = new StringBuilder();
-							for (i++; i < lines.Length; i++)
-							{
-								bodyText.AppendLine(lines[i].TrimEnd());
-							}
-							BodyText = bodyText.ToString();
-						}
-						break;
-					case "text/html":
-						{
-							//plain html message
-							StringBuilder bodyHtml = new StringBuilder();
-							for (i++; i < lines.Length; i++)
-							{
-								bodyHtml.AppendLine(lines[i].TrimEnd());
-							}
-							BodyHtml = bodyHtml.ToString();
-						}
-						break;
-					default:
-						ParseMessageSection(ContentBoundary, lines, ref i);
-						break;
-				}
-			}
+            //do we have an outside parser?
+            //if so, ask them do they want to handle this message type
+            if (MimeTypeHandler == null || !MimeTypeHandler(ContentType, lines, ref i, this))
+            {
+                switch (ContentType)
+                {
+                    case "text/plain":
+                        {
+                            //plain text message
+                            StringBuilder bodyText = new();
+                            for (i++; i < lines.Length; i++)
+                            {
+                                bodyText.AppendLine(lines[i].TrimEnd());
+                            }
+                            BodyText = bodyText.ToString();
+                        }
+                        break;
+                    case "text/html":
+                        {
+                            //plain html message
+                            StringBuilder bodyHtml = new();
+                            for (i++; i < lines.Length; i++)
+                            {
+                                bodyHtml.AppendLine(lines[i].TrimEnd());
+                            }
+                            BodyHtml = bodyHtml.ToString();
+                        }
+                        break;
+                    default:
+                        ParseMessageSection(ContentBoundary, lines, ref i);
+                        break;
+                }
+            }
 
-			return this;
-		}
-	}
+            return this;
+        }
+    }
 }
