@@ -29,88 +29,89 @@ using System.Text;
 
 namespace System.Net.Imap4
 {
-    /// <summary>
-    /// Digested Imap4 mail message
-    /// </summary>
-    public class Imap4Message
-    {
-        /// <summary>
-        /// 
-        /// </summary>
-        public List<Imap4Attachment> Attachments { get; private set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public Imap4HeaderList Headers { get; private set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string Body 
-		{
-			get
-			{
-				if (string.IsNullOrWhiteSpace(BodyHtml) == false)
-				{
-					return BodyHtml;
-				}
-				else
-				{
-					return BodyText;
-				}
-			}
-		}
-        /// <summary>
-        /// 
-        /// </summary>
-        public string BodyText { get; private set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string BodyHtml { get; private set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string Subject { get; private set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string From { get; private set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string To { get; private set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string ReplyTo { get; private set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public double MimeVersion { get; private set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string ContentType { get; private set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string ContentBoundary { get; private set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public DateTime Date { get; private set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool IsReply { get; private set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool IsReceipt { get; private set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public string Raw { get; private set; }
+	/// <summary>
+	/// Digested Imap4 mail message
+	/// </summary>
+	public class Imap4Message
+	{
+		/// <summary>
+		/// 
+		/// </summary>
+		public List<Imap4Attachment> Attachments { get; private set; } = new List<Imap4Attachment>();
+		/// <summary>
+		/// 
+		/// </summary>
+		public Imap4HeaderList Headers { get; private set; } = new Imap4HeaderList();
+		/// <summary>
+		/// 
+		/// </summary>
+		public String Body => string.IsNullOrWhiteSpace(BodyHtml) ? BodyText : BodyHtml;
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public String BodyText { get; private set; } = "";
+		/// <summary>
+		/// 
+		/// </summary>
+		public String BodyHtml { get; private set; } = "";
+		/// <summary>
+		/// 
+		/// </summary>
+		public String Subject { get; private set; } = "";
+		/// <summary>
+		/// 
+		/// </summary>
+		public String SubjectDecoded => QuotedPrintables.DecodeQuotedPrintables(Subject);
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public String From { get; private set; } = "";
+		/// <summary>
+		/// 
+		/// </summary>
+		public String To { get; private set; } = "";
+		/// <summary>
+		/// 
+		/// </summary>
+		public String Cc { get; private set; } = "";
+		/// <summary>
+		/// 
+		/// </summary>
+		public String Bcc { get; private set; } = "";
+		/// <summary>
+		/// 
+		/// </summary>
+		public String ReplyTo { get; private set; } = "";
+		/// <summary>
+		/// 
+		/// </summary>
+		public double MimeVersion { get; private set; } = 0;
+		/// <summary>
+		/// 
+		/// </summary>
+		public String ContentType { get; private set; } = "text/plain";
+		/// <summary>
+		/// 
+		/// </summary>
+		public String ContentBoundary { get; private set; } = "";
+		/// <summary>
+		/// 
+		/// </summary>
+		public DateTime Date { get; private set; } = DateTime.Now;
+		/// <summary>
+		/// 
+		/// </summary>
+		public bool IsReply { get; private set; } = false;
+		/// <summary>
+		/// 
+		/// </summary>
+		public bool IsReceipt { get; private set; } = false;
+		/// <summary>
+		/// 
+		/// </summary>
+		public String Raw { get; private set; }
 
         /// <summary>
         /// 
@@ -125,26 +126,10 @@ namespace System.Net.Imap4
         /// </summary>
         static public MimeTypeHandlerCB MimeTypeHandler;
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public Imap4Message()
-        {
-            Attachments = new List<Imap4Attachment>();
-            Headers = new Imap4HeaderList();
-            BodyText = "";
-            BodyHtml = "";
-            Subject = "";
-            From = "";
-            To = "";
-            ReplyTo = "";
-            MimeVersion = 0;
-            ContentType = "text/plain";
-            ContentBoundary = "";
-            Date = DateTime.Now;
-            IsReply = false;
-            IsReceipt = false;
-        }
+
+		public Imap4Message()
+		{
+		}
 
         private void ParseMessageSection(string bound, string[] lines, ref int i)
         {
@@ -219,48 +204,47 @@ namespace System.Net.Imap4
 
                 StringBuilder messageBuilder = new();
 
-                for (; i < lines.Length; i++)
-                {
-                    if (lines[i] == "--" + bound) break;
-                    if (lines[i] == "--" + bound + "--") break;
-                    if (isAttachment)
-                    {
-                        messageBuilder.Append(lines[i]);
-                    }
-                    else
-                    {
-                        messageBuilder.AppendLine(lines[i]);
-                    }
-                }
+				for (; i < lines.Length; i++)
+				{
+					if (lines[i] == "--" + bound) break;
+					if (lines[i] == "--" + bound + "--") break;
 
-                i--;
-                if (isAttachment)
-                {
-                    Imap4Attachment currentAttachment = new()
-                    {
-                        Name = filename,
-                        Type = currentType,
-                        Data = Convert.FromBase64String(messageBuilder.ToString())
-                    };
+					if (isAttachment)
+						messageBuilder.Append(lines[i]);
+					else
+						messageBuilder.AppendLine(lines[i]);
+				}
 
-                    //add to attachment list
-                    Attachments.Add(currentAttachment);
-                }
-                else switch (currentType)
-                    {
-                        case "text/plain":
-                            BodyText = messageBuilder.ToString().Trim();
-                            break;
-                        case "text/html":
-                            BodyHtml = messageBuilder.ToString().Trim();
-                            if (transportEncoding == "base64")
-                            {
-                                BodyHtml = Encoding.ASCII.GetString(Convert.FromBase64String(BodyHtml));
-                            }
-                            break;
-                    }
-            }
-        }
+				i--;
+
+				if (isAttachment)
+				{
+					Imap4Attachment currentAttachment = new Imap4Attachment
+					{
+						Name = filename,
+						Type = currentType,
+						Data = Convert.FromBase64String(messageBuilder.ToString())
+					};
+
+					//add to attachment list
+					Attachments.Add(currentAttachment);
+				}
+				else 
+					switch (currentType)
+					{
+						case "text/plain":
+							BodyText = messageBuilder.ToString().Trim();
+							break;
+						case "text/html":
+							BodyHtml = messageBuilder.ToString().Trim();
+
+							if (transportEncoding == "base64")
+								BodyHtml = Encoding.ASCII.GetString(Convert.FromBase64String(BodyHtml));
+
+							break;
+					}
+			}
+		}
 
         /// <summary>
         /// 
@@ -302,45 +286,58 @@ namespace System.Net.Imap4
                 Headers.Add(new Imap4Header(parts[0], parts[1].Trim()));
             }
 
-            //find some special headers to make them easier to use
-            foreach (Imap4Header h in Headers)
-            {
-                switch (h.Name.ToLower())
-                {
-                    case "subject":
-                        Subject = h.Value;
-                        break;
-                    case "to":
-                        To = h.Value;
-                        break;
-                    case "from":
-                        From = h.Value;
-                        break;
-                    case "reply-to":
-                        ReplyTo = h.Value;
-                        break;
-                    case "mime-version":
-                        MimeVersion = Convert.ToDouble(h.Value);
-                        break;
-                    case "date":
-                        {
-                            try
-                            {
-                                Date = DateTime.Parse(h.Value);
-                            }
-                            catch (Exception)
-                            {
-                                Date = DateTime.Now;
-                            }
-                        }
-                        break;
-                    case "content-type":
-                        {
-                            string type = h.Value;
-                            if (type.Contains(";"))
-                            {
-                                //ContentBoundary
-                                string[] contentParts = type.Split(contentSeparators);
+			//find some special headers to make them easier to use
+			foreach (Imap4Header h in Headers)
+			{
+				switch (h.Name.ToLower())
+				{
+					case "subject":
+						Subject = h.Value;
+						break;
+					case "to":
+						To = h.Value;
+						break;
+					case "cc":
+						Cc = h.Value;
+						break;
+					case "bcc":
+						Bcc = h.Value;
+						break;
+					case "from":
+						From = h.Value;
+						break;
+					case "reply-to":
+						ReplyTo = h.Value;
+						break;
+					case "mime-version":
+						MimeVersion = Convert.ToDouble(h.Value);
+						break;
+					case "date":
+						{
+							try
+							{
+								// sometimes a string like this is received:
+								// Thu, 28 May 2020 17:55:01 +0200 (CEST)
+								// we need to remove the (CEST) part
+								String dtx = h.Value;
+								if (dtx.EndsWith(")"))
+									dtx = dtx.Substring(0, dtx.LastIndexOf(" "));
+
+								Date = DateTime.Parse(dtx);
+							}
+							catch (Exception)
+							{
+								Date = DateTime.Now;
+							}
+						}
+						break;
+					case "content-type":
+						{
+							String type = h.Value;
+							if (type.Contains(";"))
+							{
+								//ContentBoundary
+								String[] contentParts = type.Split(contentSeparators);
 
                                 ContentType = contentParts[0];
 
@@ -411,7 +408,7 @@ namespace System.Net.Imap4
                 }
             }
 
-            return this;
-        }
-    }
+			return this;
+		}
+	}
 }
